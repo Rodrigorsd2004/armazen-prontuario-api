@@ -1,0 +1,30 @@
+{
+  "name": "armazen-de-prontuarios-2.0",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prisma": "^6.8.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.10.1",
+    "cors": "^2.8.5",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "file-saver": "^2.0.5",
+    "lucide-react": "^0.511.0",
+    "mysql2": "^3.14.1",
+    "react-imask": "^7.6.1",
+    "react-input-mask": "^2.0.4",
+    "react-router-dom": "^7.6.1",
+    "xlsx": "^0.18.5"
+  }
+}
