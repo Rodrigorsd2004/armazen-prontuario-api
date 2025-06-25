@@ -8,8 +8,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://armazen-prontuario-api-production.up.railway.app",
-      "https://prontuariosemef.vercel.app" // (coloque aqui depois o domínio final da Vercel)
+      "https://prontuariosemef.vercel.app"
     ],
   })
 );
