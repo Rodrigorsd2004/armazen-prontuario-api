@@ -28,7 +28,6 @@ app.get("/", (req, res) => {
 // ROTA PARA GERAR EXCEL A PARTIR DE UM MODELO
 app.post("/gerar-excel", async (req, res) => {
   const dados = req.body;
-
   const workbook = new ExcelJS.Workbook();
   const modeloPath = path.join(__dirname, "assets", "modelo-prontuario.xlsx");
 
@@ -36,9 +35,9 @@ app.post("/gerar-excel", async (req, res) => {
     const buffer = fs.readFileSync(modeloPath);
     await workbook.xlsx.load(buffer);
     const sheet = workbook.getWorksheet(1);
+    const set = (celula, valor) => { sheet.getCell(celula).value = valor };
 
-    const set = (celula, valor) => (sheet.getCell(celula).value = valor);
-
+    // Mapeamento com base no seu modelo real
     set("B11", dados.escola);
     set("J11", dados.codigoCIE);
     set("B13", dados.ra);
@@ -51,7 +50,7 @@ app.post("/gerar-excel", async (req, res) => {
     set("B20", dados.nis);
     set("F21", dados.bolsaFamilia === "sim" ? "X" : "");
     set("F22", dados.bolsaFamilia === "não" ? "X" : "");
-    set("I20", dados.corRaca);
+    set("H23", dados.corRaca);
     set("E24", dados.necessidadesEspeciais === "sim" ? "X" : "");
     set("F24", dados.necessidadesEspeciais === "não" ? "X" : "");
     set("C28", dados.municipio);
@@ -60,19 +59,21 @@ app.post("/gerar-excel", async (req, res) => {
 
     if (dados.dataNascimento) {
       const data = new Date(dados.dataNascimento);
-      set("J29", data.getDate().toString().padStart(2, "0"));
-      set("K29", (data.getMonth() + 1).toString().padStart(2, "0"));
-      set("L29", data.getFullYear().toString());
+      set("V18", data.getDate().toString().padStart(2, "0"));
+      set("W18", (data.getMonth() + 1).toString().padStart(2, "0"));
+      set("X18", data.getFullYear().toString());
     }
 
     set("C31", dados.nomePai);
     set("C34", dados.nomeMae);
-    set("O18", dados.enderecoRua);
-    set("U18", dados.enderecoNumero);
+
+    set("N18", dados.enderecoRua);
+    set("U17", dados.enderecoNumero);
     set("O20", dados.enderecoBairro);
     set("O21", dados.enderecoCidade);
     set("V20", dados.enderecoUF);
     set("V21", dados.enderecoCEP);
+
     set("Q25", dados.telefone1);
     set("Q26", dados.telefone2);
 
