@@ -1,6 +1,9 @@
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
+const ExcelJS = require("exceljs");
 
 const app = express(); // Primeiro criar o app
 
@@ -17,11 +20,77 @@ app.use(express.json());
 
 const prisma = new PrismaClient();
 
-// Rotas
-
 // Rota de teste
 app.get("/", (req, res) => {
   res.send("API Prontuário Escolar funcionando");
+});
+
+// ROTA PARA GERAR EXCEL A PARTIR DE UM MODELO
+app.post("/gerar-excel", async (req, res) => {
+  const dados = req.body;
+
+  const workbook = new ExcelJS.Workbook();
+  const modeloPath = path.join(__dirname, "assets", "modelo-prontuario.xlsx");
+
+  try {
+    const buffer = fs.readFileSync(modeloPath);
+    await workbook.xlsx.load(buffer);
+    const sheet = workbook.getWorksheet(1);
+
+    const set = (celula, valor) => (sheet.getCell(celula).value = valor);
+
+    set("B11", dados.escola);
+    set("J11", dados.codigoCIE);
+    set("B13", dados.ra);
+    set("F13", dados.cpf);
+    set("J13", dados.rg);
+    set("B15", dados.rm);
+    set("F15", dados.sexo);
+    set("J15", dados.orgaoExpedidor);
+    set("C17", dados.nome);
+    set("B20", dados.nis);
+    set("F21", dados.bolsaFamilia === "sim" ? "X" : "");
+    set("F22", dados.bolsaFamilia === "não" ? "X" : "");
+    set("I20", dados.corRaca);
+    set("E24", dados.necessidadesEspeciais === "sim" ? "X" : "");
+    set("F24", dados.necessidadesEspeciais === "não" ? "X" : "");
+    set("C28", dados.municipio);
+    set("C29", dados.nacionalidade);
+    set("H29", dados.ufNascimento);
+
+    if (dados.dataNascimento) {
+      const data = new Date(dados.dataNascimento);
+      set("J29", data.getDate().toString().padStart(2, "0"));
+      set("K29", (data.getMonth() + 1).toString().padStart(2, "0"));
+      set("L29", data.getFullYear().toString());
+    }
+
+    set("C31", dados.nomePai);
+    set("C34", dados.nomeMae);
+    set("O18", dados.enderecoRua);
+    set("U18", dados.enderecoNumero);
+    set("O20", dados.enderecoBairro);
+    set("O21", dados.enderecoCidade);
+    set("V20", dados.enderecoUF);
+    set("V21", dados.enderecoCEP);
+    set("Q25", dados.telefone1);
+    set("Q26", dados.telefone2);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=prontuario.xlsx"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Erro ao gerar Excel:", error);
+    res.status(500).send("Erro ao gerar Excel");
+  }
 });
 
 // Criar um aluno
@@ -43,14 +112,13 @@ app.post("/alunos", async (req, res) => {
   }
 });
 
-//Editar um aluno
+// Editar um aluno
 app.put("/alunos/:id", async (req, res) => {
   console.log("Dados recebidos:", req.body);
   const { id } = req.params;
   const data = req.body;
 
   try {
-    // Verifica se o aluno existe
     const alunoExiste = await prisma.aluno.findUnique({
       where: { id: parseInt(id) },
     });
@@ -59,28 +127,23 @@ app.put("/alunos/:id", async (req, res) => {
       return res.status(404).json({ error: "Aluno não encontrado" });
     }
 
-    // Corrigir o campo dataNascimento se estiver vazio
     if (!data.dataNascimento || data.dataNascimento.trim() === "") {
       delete data.dataNascimento;
     } else {
       data.dataNascimento = new Date(data.dataNascimento);
     }
 
-
-    // Atualiza o aluno
     const alunoAtualizado = await prisma.aluno.update({
       where: { id: parseInt(id) },
       data,
     });
 
     res.json(alunoAtualizado);
-
   } catch (error) {
     console.error("Erro ao atualizar aluno:", error);
     res.status(500).json({ error: "Erro interno ao atualizar aluno" });
   }
 });
-
 
 // Deletar um aluno
 app.delete("/alunos/:id", async (req, res) => {
@@ -98,13 +161,11 @@ app.delete("/alunos/:id", async (req, res) => {
   }
 });
 
-
-
 // Listar todos os alunos
 app.get("/alunos", async (req, res) => {
   try {
     const alunos = await prisma.aluno.findMany({
-      orderBy: { id: 'asc' }
+      orderBy: { id: "asc" },
     });
 
     res.json(alunos);
@@ -113,7 +174,6 @@ app.get("/alunos", async (req, res) => {
     res.status(500).json({ error: "Erro ao buscar alunos" });
   }
 });
-
 
 // Buscar aluno por ID
 app.get("/alunos/:id", async (req, res) => {
@@ -129,9 +189,7 @@ app.get("/alunos/:id", async (req, res) => {
   res.json(aluno);
 });
 
-
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`); 
 });
