@@ -50,7 +50,7 @@ app.post("/gerar-excel", async (req, res) => {
     set("B20", dados.nis);
     set("F21", dados.bolsaFamilia === "sim" ? "X" : "");
     set("F22", dados.bolsaFamilia === "não" ? "X" : "");
-    set("H23", dados.corRaca);
+    set("I20", dados.corRaca);
     set("E24", dados.necessidadesEspeciais === "sim" ? "X" : "");
     set("F24", dados.necessidadesEspeciais === "não" ? "X" : "");
     set("C28", dados.municipio);
@@ -59,16 +59,16 @@ app.post("/gerar-excel", async (req, res) => {
 
     if (dados.dataNascimento) {
       const data = new Date(dados.dataNascimento);
-      set("V18", data.getDate().toString().padStart(2, "0"));
-      set("W18", (data.getMonth() + 1).toString().padStart(2, "0"));
-      set("X18", data.getFullYear().toString());
+      set("J29", data.getDate().toString().padStart(2, "0"));
+      set("K29", (data.getMonth() + 1).toString().padStart(2, "0"));
+      set("L29", data.getFullYear().toString());
     }
 
     set("C31", dados.nomePai);
     set("C34", dados.nomeMae);
 
-    set("N18", dados.enderecoRua);
-    set("U17", dados.enderecoNumero);
+    set("O18", dados.enderecoRua);
+    set("U18", dados.enderecoNumero);
     set("O20", dados.enderecoBairro);
     set("O21", dados.enderecoCidade);
     set("V20", dados.enderecoUF);

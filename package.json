@@ -26,6 +26,7 @@
     "react-imask": "^7.6.1",
     "react-input-mask": "^2.0.4",
     "react-router-dom": "^7.6.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xlsx-populate": "^1.21.0"
   }
 }
