@@ -15,7 +15,6 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function(origin, callback) {
-    // Permite requests sem origin (ex: Postman, curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
@@ -28,28 +27,21 @@ const corsOptions = {
   credentials: true,
 };
 
-// Middleware para log das requisições (opcional)
 app.use((req, res, next) => {
   console.log(`[${req.method}] ${req.url} - Origin: ${req.headers.origin || "none"}`);
   next();
 });
 
-// Aplicar CORS com as opções definidas
 app.use(cors(corsOptions));
-
-// Responder requisições OPTIONS para todas as rotas com cabeçalhos CORS corretos
 app.options("*", cors(corsOptions));
-
 app.use(express.json());
 
 const prisma = new PrismaClient();
 
-// Rota de teste
 app.get("/", (req, res) => {
   res.send("API Prontuário Escolar funcionando");
 });
 
-// ROTA PARA GERAR EXCEL A PARTIR DE UM MODELO
 app.post("/gerar-excel", async (req, res) => {
   const dados = req.body;
   const workbook = new ExcelJS.Workbook();
@@ -66,7 +58,6 @@ app.post("/gerar-excel", async (req, res) => {
       cell.style = estiloOriginal;
     };
 
-    // Preenchimento das células conforme dados
     set("B11", dados.escola);
     set("J11", dados.codigoCIE);
     set("B13", dados.ra);
@@ -127,7 +118,6 @@ app.post("/gerar-excel", async (req, res) => {
   }
 });
 
-// Criar um aluno
 app.post("/alunos", async (req, res) => {
   const data = req.body;
 
@@ -146,7 +136,6 @@ app.post("/alunos", async (req, res) => {
   }
 });
 
-// Editar um aluno
 app.put("/alunos/:id", async (req, res) => {
   const { id } = req.params;
   const data = req.body;
@@ -178,7 +167,6 @@ app.put("/alunos/:id", async (req, res) => {
   }
 });
 
-// Deletar um aluno
 app.delete("/alunos/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -194,7 +182,6 @@ app.delete("/alunos/:id", async (req, res) => {
   }
 });
 
-// Listar todos os alunos
 app.get("/alunos", async (req, res) => {
   try {
     const alunos = await prisma.aluno.findMany({
@@ -208,7 +195,6 @@ app.get("/alunos", async (req, res) => {
   }
 });
 
-// Buscar aluno por ID
 app.get("/alunos/:id", async (req, res) => {
   const { id } = req.params;
   const aluno = await prisma.aluno.findUnique({
@@ -220,20 +206,6 @@ app.get("/alunos/:id", async (req, res) => {
   }
 
   res.json(aluno);
-});
-
-// Login simples
-app.post("/login", (req, res) => {
-  const { prontuario, senha } = req.body;
-
-  const loginCorreto = process.env.LOGIN_USER;
-  const senhaCorreta = process.env.LOGIN_PASSWORD;
-
-  if (prontuario === loginCorreto && senha === senhaCorreta) {
-    return res.status(200).json({ mensagem: "Login autorizado" });
-  } else {
-    return res.status(401).json({ erro: "Prontuário ou senha incorretos" });
-  }
 });
 
 const PORT = process.env.PORT || 3000;
