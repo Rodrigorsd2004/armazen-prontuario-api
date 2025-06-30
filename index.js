@@ -6,20 +6,17 @@ const path = require("path");
 const ExcelJS = require("exceljs");
 require("dotenv").config();
 
+const app = express();
 
-
-const app = express(); // Primeiro criar o app
-
-
-app.use(cors({
+const corsOptions = {
   origin: ["http://localhost:5173", "https://prontuariosemef.vercel.app"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-}));
-app.options("*", cors());
+};
 
-
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Responde preflight para todas rotas
 app.use(express.json());
 
 const prisma = new PrismaClient();
@@ -203,11 +200,7 @@ app.get("/alunos/:id", async (req, res) => {
   res.json(aluno);
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
-
+// Login simples
 app.post("/login", (req, res) => {
   const { prontuario, senha } = req.body;
 
@@ -221,3 +214,7 @@ app.post("/login", (req, res) => {
   }
 });
 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
