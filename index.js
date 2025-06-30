@@ -8,15 +8,38 @@ require("dotenv").config();
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://prontuariosemef.vercel.app"
+];
+
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://prontuariosemef.vercel.app"],
+  origin: function(origin, callback) {
+    // Permite requests sem origin (ex: Postman, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Origem não permitida pelo CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
 
+// Middleware para log das requisições (opcional)
+app.use((req, res, next) => {
+  console.log(`[${req.method}] ${req.url} - Origin: ${req.headers.origin || "none"}`);
+  next();
+});
+
+// Aplicar CORS com as opções definidas
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Responde preflight para todas rotas
+
+// Responder requisições OPTIONS para todas as rotas com cabeçalhos CORS corretos
+app.options("*", cors(corsOptions));
+
 app.use(express.json());
 
 const prisma = new PrismaClient();
@@ -43,7 +66,7 @@ app.post("/gerar-excel", async (req, res) => {
       cell.style = estiloOriginal;
     };
 
-    // Mapeamento com base no seu modelo real
+    // Preenchimento das células conforme dados
     set("B11", dados.escola);
     set("J11", dados.codigoCIE);
     set("B13", dados.ra);
@@ -125,7 +148,6 @@ app.post("/alunos", async (req, res) => {
 
 // Editar um aluno
 app.put("/alunos/:id", async (req, res) => {
-  console.log("Dados recebidos:", req.body);
   const { id } = req.params;
   const data = req.body;
 
