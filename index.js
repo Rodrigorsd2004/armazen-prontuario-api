@@ -9,10 +9,7 @@ const app = express(); // Primeiro criar o app
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://prontuariosemef.vercel.app"
-    ],
+    origin: ["http://localhost:5173", "https://prontuariosemef.vercel.app"],
   })
 );
 
@@ -35,7 +32,12 @@ app.post("/gerar-excel", async (req, res) => {
     const buffer = fs.readFileSync(modeloPath);
     await workbook.xlsx.load(buffer);
     const sheet = workbook.getWorksheet(1);
-    const set = (celula, valor) => { sheet.getCell(celula).value = valor };
+    const set = (celula, valor) => {
+      const cell = sheet.getCell(celula);
+      const estiloOriginal = { ...cell.style };
+      cell.value = valor;
+      cell.style = estiloOriginal;
+    };
 
     // Mapeamento com base no seu modelo real
     set("B11", dados.escola);
@@ -59,9 +61,13 @@ app.post("/gerar-excel", async (req, res) => {
 
     if (dados.dataNascimento) {
       const data = new Date(dados.dataNascimento);
-      set("J29", data.getDate().toString().padStart(2, "0"));
-      set("K29", (data.getMonth() + 1).toString().padStart(2, "0"));
-      set("L29", data.getFullYear().toString());
+      const dia = String(data.getDate()).padStart(2, "0");
+      const mes = String(data.getMonth() + 1).padStart(2, "0");
+      const ano = data.getFullYear().toString();
+
+      set("J29", dia);
+      set("K29", mes);
+      set("L29", ano);
     }
 
     set("C31", dados.nomePai);
@@ -192,5 +198,5 @@ app.get("/alunos/:id", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`); 
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
