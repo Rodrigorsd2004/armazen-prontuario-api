@@ -6,27 +6,19 @@ const path = require("path");
 const ExcelJS = require("exceljs");
 require("dotenv").config();
 
-app.post("/login", (req, res) => {
-  const { prontuario, senha } = req.body;
-
-  const loginCorreto = process.env.LOGIN_USER;
-  const senhaCorreta = process.env.LOGIN_PASSWORD;
-
-  if (prontuario === loginCorreto && senha === senhaCorreta) {
-    return res.status(200).json({ mensagem: "Login autorizado" });
-  } else {
-    return res.status(401).json({ erro: "Prontuário ou senha incorretos" });
-  }
-});
 
 
 const app = express(); // Primeiro criar o app
 
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "https://prontuariosemef.vercel.app"],
-  })
-);
+
+app.use(cors({
+  origin: ["http://localhost:5173", "https://prontuariosemef.vercel.app"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+app.options("*", cors());
+
 
 app.use(express.json());
 
@@ -215,3 +207,17 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
+app.post("/login", (req, res) => {
+  const { prontuario, senha } = req.body;
+
+  const loginCorreto = process.env.LOGIN_USER;
+  const senhaCorreta = process.env.LOGIN_PASSWORD;
+
+  if (prontuario === loginCorreto && senha === senhaCorreta) {
+    return res.status(200).json({ mensagem: "Login autorizado" });
+  } else {
+    return res.status(401).json({ erro: "Prontuário ou senha incorretos" });
+  }
+});
+
